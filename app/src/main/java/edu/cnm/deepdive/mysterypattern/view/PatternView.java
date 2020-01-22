@@ -1,7 +1,9 @@
 package edu.cnm.deepdive.mysterypattern.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -9,6 +11,9 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 import androidx.annotation.Nullable;
+import edu.cnm.deepdive.mysterypattern.R;
+// import enum Mode from MainFragment.java
+import edu.cnm.deepdive.mysterypattern.controller.MainFragment.Mode;
 import edu.cnm.deepdive.mysterypattern.model.Position;
 import edu.cnm.deepdive.mysterypattern.model.Terrain;
 import java.util.List;
@@ -21,18 +26,19 @@ public class PatternView extends View {
   private Canvas canvas;
   private Paint paint;
   private RectF dest;
+  private Mode mode;
 
-//a set of braces at the top of the class but outside any other construct becomes part of instance initialization (gets included in all following constructors)
+  //a set of braces at the top of the class but outside any other construct becomes part of instance initialization (gets included in all following constructors)
+
   {
     setWillNotDraw(false);
     paint = new Paint();
     dest = new RectF();
   }
-//constructors
+  //constructors
   public PatternView(Context context) {
     super(context);
   }
-
   public PatternView(Context context, @Nullable AttributeSet attrs) {
     super(context, attrs);
   }
@@ -46,17 +52,40 @@ public class PatternView extends View {
     super(context, attrs, defStyleAttr, defStyleRes);
   }
 
+  @SuppressLint("CanvasSize")
   @Override
   protected void onDraw(Canvas canvas) {
-    if (vertices != null) {
-      paint.setColor(Color.BLUE);
-      for (Position position : vertices) {
-        canvas.drawCircle((float) position.getX(), (float) position.getY(), 25, paint);
+    if (mode == Mode.BUILDING || mode == Mode.READY) {
+      if (vertices != null) {
+        paint.setColor(Color.BLUE);
+        for (Position position : vertices) {
+          canvas.drawCircle((float) position.getX(), (float) position.getY(),
+             getContext().getResources().getDimension(R.dimen.vertex_radius), paint);
+        }
       }
+    } else {
+      if (bitmap == null) {
+        createBitmap();
+      }
+      dest.set(0, 0, canvas.getWidth(), canvas.getHeight());
+      canvas.drawBitmap(bitmap, null, dest, null);
     }
   }
 
+  @Override
+  public boolean performClick() {
+    return super.performClick();
+  }
+
   //setters & getters
+  public Mode getMode() {
+    return mode;
+  }
+
+  public void setMode(Mode mode) {
+    this.mode = mode;
+  }
+  //
   public List<Position> getVertices() {
     return vertices;
   }
@@ -72,4 +101,29 @@ public class PatternView extends View {
   public void setTerrain(Terrain terrain) {
     this.terrain = terrain;
   }
+
+  private void createBitmap(){
+    bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Config.RGB_565);
+    canvas = new Canvas(bitmap);
+    canvas.drawColor(Color.WHITE);
+  }
+
+  public void reset() {
+    bitmap = null;
+    canvas = null;
+  }
+
+  public void update() {
+    if (bitmap == null) {
+      createBitmap();
+    }
+    if (terrain != null) {
+      paint.setColor(Color.BLACK);
+      for (Position position : terrain.getCurrent()) {
+        canvas.drawPoint((float) position.getX(), (float) position.getY(), paint);
+      }
+    }
+  }
+
+
 }
