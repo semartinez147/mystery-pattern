@@ -14,7 +14,7 @@ public class Agent extends Position {
   public void jump(Position[] vertices, double fraction) {
     Position target = vertices[rng.nextInt(vertices.length)];
     setX(getX() + (target.getX() - getX()) * fraction);
-    setX(getY() + (target.getY() - getY()) * fraction);
+    setY(getY() + (target.getY() - getY()) * fraction);
   }
 
 }
